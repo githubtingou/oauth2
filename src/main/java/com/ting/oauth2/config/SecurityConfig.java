@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 /**
@@ -26,6 +27,10 @@ public class SecurityConfig {
     @Qualifier(value = "loginSuccessHandle")
     private AuthenticationSuccessHandler loginSuccessHandle;
 
+    @Autowired
+    @Qualifier(value = "loginFailureHandle")
+    private AuthenticationFailureHandler loginFailureHandle;
+
     /**
      * 鉴权操作
      *
@@ -35,14 +40,18 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
-        security.authorizeHttpRequests().antMatchers("auth/**").permitAll()
+        security.authorizeHttpRequests()
+                .antMatchers("auth/**").permitAll()
                 // 拦截其他所有未放行的接口地址
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("auth/login")
                 .successHandler(loginSuccessHandle)
-                .failureHandler()
+                .failureHandler(loginFailureHandle)
+                .and()
+                .userDetailsService(userDetailService)
+                .passwordManagement(config -> config.changePasswordPage("/auth/changePassword"))
         ;
 
         return security.build();

@@ -24,7 +24,7 @@ public class R<T> {
     private T data;
 
 
-    public <T> R<T> OK(T t) {
+    public static <T> R<T> OK(T t) {
         return (R<T>) R.builder().success(ResponseCode.OK.isSuccess())
                 .code(ResponseCode.OK.getCode())
                 .message(ResponseCode.OK.getMessage())
@@ -33,19 +33,27 @@ public class R<T> {
 
     }
 
-    public R<Void> OK() {
-        return this.OK(null);
+    public static R<Void> OK() {
+        return OK(null);
 
     }
 
 
-    public R<Object> error() {
-        return this.error(ResponseCode.ERROR);
+    public static R<Object> error() {
+        return error(ResponseCode.ERROR);
 
     }
 
-    public R<Object> error(ResponseCode code) {
+    public static R<Object> error(ResponseCode code) {
         return R.builder().success(code.isSuccess())
+                .code(code.getCode())
+                .message(code.getMessage())
+                .build();
+
+    }
+
+    public static <T> R<T> error(ResponseCode code, T message) {
+        return (R<T>) R.builder().success(code.isSuccess())
                 .code(code.getCode())
                 .message(code.getMessage())
                 .build();
@@ -58,6 +66,7 @@ public class R<T> {
     public enum ResponseCode {
         OK("200", "处理成功", true),
         ERROR("400", "处理失败"),
+        AUTH_ERROR("401", "权限验证失败"),
         ;
 
         private final String code;
